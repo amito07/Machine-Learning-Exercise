@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -111,12 +112,62 @@ print(high_corr_features)
 
 X_selected = df[high_corr_features]
 Y = df["loan_status"]
+print("============= Y ================", Y)
 
 X_train, X_test, y_train, y_test = train_test_split(X_selected, Y, test_size=0.2, random_state=42)
 
 print(X_train.shape, y_train.shape, X_test.shape, y_test.shape)
 
+print("============ y_train =================", y_train)
+
 y_train = y_train.values.reshape(-1, 1)
 y_test = y_test.values.reshape(-1, 1)
 
-print(X_train.shape, y_train.shape, X_test.shape, y_test.shape)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X_train)
+Y_scaled = scaler.fit_transform(y_train)
+
+print("=========== Y_scaled ===========", Y_scaled)
+X_np = X_scaled.T
+Y_np = Y_scaled.T
+print("================= X_train ==============", X_train)
+print("================= X_scaled =============", X_scaled)
+print("================= X_np =================", X_np)
+
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+
+def compute_gradient_logistic(X, y, w, b):
+    """
+    Computes the gradient for logistic regression
+
+    Args:
+      X (ndarray (m,n): Data, m examples with n features
+      y (ndarray (m,)): target values
+      w (ndarray (n,)): model parameters
+      b (scalar)      : model parameter
+    Returns
+      dj_dw (ndarray (n,)): The gradient of the cost w.r.t. the parameters w.
+      dj_db (scalar)      : The gradient of the cost w.r.t. the parameter b.
+    """
+    m, n = X.shape
+    dj_dw = np.zeros((n,))  # (n,)
+    dj_db = 0.
+
+    for i in range(m):
+        f_wb_i = sigmoid(np.dot(X[i], w) + b)  # (n,)(n,)=scalar
+        err_i = f_wb_i - y[i]  # scalar
+        for j in range(n):
+            dj_dw[j] = dj_dw[j] + err_i * X[i, j]  # scalar
+        dj_db = dj_db + err_i
+    dj_dw = dj_dw / m  # (n,)
+    dj_db = dj_db / m  # scalar
+
+    return dj_db, dj_dw
+# w_tmp = np.array([2.,3.])
+# b_tmp = 1.
+# dj_db_tmp, dj_dw_tmp = compute_gradient_logistic(X_np, Y_np, w_tmp, b_tmp)
+# print(f"dj_db: {dj_db_tmp}" )
+# print(f"dj_dw: {dj_dw_tmp.tolist()}" )
